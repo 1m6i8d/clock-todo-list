@@ -1,70 +1,200 @@
 """
-Page routes for Clock - a fullstack Flask to-do list app.
-FRONTEND-FIRST NOTE:
-Every route below renders a template with hardcoded/dummy data.
-Once the DB models are wired up (Phase 2), replace DUMMY_TASKS with
-real queries. Templates already expect this exact data shape, so
-swapping it later should be a drop-in change, not a rewrite.
+Page + CRUD routes for Clock.
+Phase 2: DUMMY_TASKS is gone. Everything reads/writes through
+SQLAlchemy, scoped to the logged-in user via Flask-Login's current_user.
 """
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_user, logout_user, login_required, current_user
+
+from app import db
+from app.models import User, Task
 
 pages_bp = Blueprint("pages", __name__)
 
-# ---- Single source of truth for category -> color mapping ----
-# Any task without an explicit "color" gets its color resolved here,
-# once, before it ever reaches a template or clock.js.
-CATEGORY_COLORS = {
-    "Health": "#2F5A45",
-    "Work": "#5B7FB5",
-    "Home": "#D98A3D",
-    "Personal": "#7B6A9C",
-}
-DEFAULT_COLOR = "#8A8778"
+
+# ---- time helpers: <input type="time"> gives "HH:MM", DB stores decimal hours ----
+
+def time_str_to_decimal(time_str):
+    hh, mm = time_str.split(":")
+    return int(hh) + int(mm) / 60
 
 
-def _resolve_color(task):
-    """Return task's explicit color if set, else the category default."""
-    return task.get("color") or CATEGORY_COLORS.get(task["category"], DEFAULT_COLOR)
+def decimal_to_time_str(decimal_hours):
+    hh = int(decimal_hours)
+    mm = round((decimal_hours % 1) * 60)
+    return f"{hh:02d}:{mm:02d}"
 
 
-# ---- Dummy data (stand-in for the database, until Phase 2) ----
-# "color" is omitted unless a task intentionally overrides its
-# category's default (see "Standup call" below).
-DUMMY_TASKS = [
-    {"id": 1, "title": "Morning run", "category": "Health", "done": False, "start": 6.5, "end": 7.5},
-    {"id": 2, "title": "Water the plants", "category": "Home", "done": False, "start": 8, "end": 8.5},
-    {"id": 3, "title": "Finish Flask routes", "category": "Work", "done": True, "start": 9.5, "end": 12.5},
-    {"id": 4, "title": "Standup call", "category": "Work", "done": False, "start": 10, "end": 10.5, "color": "#A4577A"},
-    {"id": 5, "title": "Read 20 pages", "category": "Personal", "done": False, "start": 21, "end": 22},
-]
-
-# Resolve every task's display color once, here, so both the Jinja
-# templates and clock.js (which receives this same data as JSON) read
-# from one place instead of keeping their own copies of the mapping.
-for _task in DUMMY_TASKS:
-    _task["color"] = _resolve_color(_task)
-
+# ---- dashboard / tasks ----
 
 @pages_bp.route("/")
+@login_required
 def dashboard():
-    return render_template("dashboard.html", tasks=DUMMY_TASKS)
+    tasks = Task.query.filter_by(user_id=current_user.id).order_by(Task.start).all()
+    tasks_json = [t.to_dict() for t in tasks]
+    return render_template("dashboard.html", tasks=tasks, tasks_json=tasks_json)
 
 
 @pages_bp.route("/tasks")
+@login_required
 def tasks():
-    return render_template("tasks.html", tasks=DUMMY_TASKS)
+    task_list = Task.query.filter_by(user_id=current_user.id).order_by(Task.start).all()
+    return render_template("tasks.html", tasks=task_list)
 
 
-@pages_bp.route("/tasks/new")
+@pages_bp.route("/tasks/new", methods=["GET", "POST"])
+@login_required
 def new_task():
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        category = request.form.get("category", "Personal")
+        start_raw = request.form.get("start", "")
+        end_raw = request.form.get("end", "")
+
+        if not title or not start_raw or not end_raw:
+            flash("Title, start time, and end time are required.", "error")
+            return render_template("new_task.html")
+
+        start = time_str_to_decimal(start_raw)
+        end = time_str_to_decimal(end_raw)
+
+        if end <= start:
+            flash("End time must be after start time.", "error")
+            return render_template("new_task.html")
+
+        task = Task(
+            user_id=current_user.id,
+            title=title,
+            category=category,
+            start=start,
+            end=end,
+        )
+        db.session.add(task)
+        db.session.commit()
+        flash("Task created.", "success")
+        return redirect(url_for("pages.dashboard"))
+
     return render_template("new_task.html")
 
 
-@pages_bp.route("/login")
+@pages_bp.route("/tasks/<int:task_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_task(task_id):
+    task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        category = request.form.get("category", task.category)
+        start_raw = request.form.get("start", "")
+        end_raw = request.form.get("end", "")
+
+        if not title or not start_raw or not end_raw:
+            flash("Title, start time, and end time are required.", "error")
+            return render_template(
+                "edit_task.html", task=task,
+                start_str=start_raw or decimal_to_time_str(task.start),
+                end_str=end_raw or decimal_to_time_str(task.end),
+            )
+
+        start = time_str_to_decimal(start_raw)
+        end = time_str_to_decimal(end_raw)
+
+        if end <= start:
+            flash("End time must be after start time.", "error")
+            return render_template(
+                "edit_task.html", task=task, start_str=start_raw, end_str=end_raw
+            )
+
+        task.title = title
+        task.category = category
+        task.start = start
+        task.end = end
+        db.session.commit()
+        flash("Task updated.", "success")
+        return redirect(url_for("pages.dashboard"))
+
+    return render_template(
+        "edit_task.html",
+        task=task,
+        start_str=decimal_to_time_str(task.start),
+        end_str=decimal_to_time_str(task.end),
+    )
+
+
+@pages_bp.route("/tasks/<int:task_id>/delete", methods=["POST"])
+@login_required
+def delete_task(task_id):
+    task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
+    db.session.delete(task)
+    db.session.commit()
+    flash("Task deleted.", "success")
+    return redirect(url_for("pages.dashboard"))
+
+
+@pages_bp.route("/tasks/<int:task_id>/toggle", methods=["POST"])
+@login_required
+def toggle_task(task_id):
+    task = Task.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
+    task.done = not task.done
+    db.session.commit()
+    return redirect(request.referrer or url_for("pages.dashboard"))
+
+
+# ---- auth ----
+
+@pages_bp.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("pages.dashboard"))
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        user = User.query.filter_by(email=email).first()
+
+        if user and user.check_password(password):
+            login_user(user)
+            flash(f"Welcome back, {user.name}.", "success")
+            return redirect(url_for("pages.dashboard"))
+
+        flash("Invalid email or password.", "error")
+
     return render_template("login.html")
 
 
-@pages_bp.route("/signup")
+@pages_bp.route("/signup", methods=["GET", "POST"])
 def signup():
+    if current_user.is_authenticated:
+        return redirect(url_for("pages.dashboard"))
+
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+
+        if not name or not email or not password:
+            flash("All fields are required.", "error")
+            return render_template("signup.html")
+
+        if User.query.filter_by(email=email).first():
+            flash("An account with that email already exists.", "error")
+            return render_template("signup.html")
+
+        user = User(name=name, email=email)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+
+        login_user(user)
+        flash("Account created — welcome!", "success")
+        return redirect(url_for("pages.dashboard"))
+
     return render_template("signup.html")
+
+
+@pages_bp.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("Logged out.", "success")
+    return redirect(url_for("pages.login"))

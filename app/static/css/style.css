@@ -319,3 +319,108 @@ body {
 
   .clock-panel { flex-basis: 100%; max-width: 320px; margin: 0 auto; }
 }
+
+/* ---- Sidebar: user info + logout ---- */
+.sidebar-user {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.sidebar-user span {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.sidebar-user a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.sidebar-user a:hover { text-decoration: underline; }
+
+/* ---- Flash messages ---- */
+.flashes {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.flash {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  border: 1px solid transparent;
+}
+
+.flash-success {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.flash-error {
+  background: var(--amber-soft);
+  color: #A34A1F;
+  border-color: var(--amber);
+}
+
+/* ---- Task list: toggle checkbox + edit link ---- */
+.inline-form { margin: 0; display: inline-flex; }
+
+.task-toggle {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.task-toggle:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+.task-item.done .task-toggle {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.task-edit {
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.task-edit:hover { text-decoration: underline; }
+
+/* ---- Danger button (delete task) ---- */
+.btn-danger {
+  background: var(--panel);
+  color: #A3312F;
+  border: 1px solid #A3312F;
+}
+
+.btn-danger:hover {
+  background: #A3312F;
+  color: #fff;
+  box-shadow: var(--shadow-hover);
+}

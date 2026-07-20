@@ -1,18 +1,29 @@
-"""
-Clock - Flask app factory.
-
-Frontend-first setup: templates render with dummy/hardcoded data for now.
-Once the DB is ready, routes will pass real data in.
-"""
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_login import LoginManager
+
+db = SQLAlchemy()
+migrate = Migrate()
+login_manager = LoginManager()
 
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_pyfile("../config.py", silent=True)
-    app.config.setdefault("SECRET_KEY", "dev-secret-change-me")
+    app.config.from_object("config")
 
-    # Register page routes (frontend-first: these just render templates for now)
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+    login_manager.login_view = "pages.login"
+    login_manager.login_message = "Please log in to continue."
+
+    from app.models import User
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
     from app.routes.pages import pages_bp
     app.register_blueprint(pages_bp)
 

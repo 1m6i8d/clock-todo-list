@@ -4,11 +4,10 @@
   <header class="page-header">
     <h1>New Task</h1>
   </header>
-
-  <form class="form-card" method="post" action="#">
+  <form class="form-card" method="post" action="{{ url_for('pages.new_task') }}">
     <label>
       Title
-      <input type="text" name="title" placeholder="e.g. Morning run">
+      <input type="text" name="title" placeholder="e.g. Morning run" required>
     </label>
     <label>
       Category
@@ -21,13 +20,12 @@
     </label>
     <label>
       Start time
-      <input type="time" name="start">
+      <input type="time" name="start" required>
     </label>
     <label>
       End time
-      <input type="time" name="end">
+      <input type="time" name="end" required>
     </label>
     <button type="submit" class="btn">Save task</button>
   </form>
-  <p class="hint">This form isn't wired to the backend yet — it'll save to the database once the task model is connected.</p>
 {% endblock %}

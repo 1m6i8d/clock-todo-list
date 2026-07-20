@@ -4,7 +4,6 @@
   <header class="page-header">
     <h1>All tasks</h1>
   </header>
-
   <section class="task-section">
     <div class="section-header">
       <h2>{{ tasks|length }} tasks</h2>
@@ -14,10 +13,14 @@
       <ul class="task-list">
         {% for task in tasks %}
         <li class="task-item {{ 'done' if task.done }}">
+          <form method="post" action="{{ url_for('pages.toggle_task', task_id=task.id) }}" class="inline-form">
+            <button type="submit" class="task-toggle" aria-label="Toggle done">{{ '✓' if task.done else '' }}</button>
+          </form>
           <span class="task-time">{{ "%02d:%02d"|format(task.start|int, ((task.start % 1) * 60)|int) }}</span>
-          <span class="category-dot" style="background: {{ {'Health':'#2F5A45','Work':'#5B7FB5','Home':'#D98A3D','Personal':'#7B6A9C'}.get(task.category, '#8A8778') }}"></span>
+          <span class="category-dot" style="background: {{ task.display_color() }}"></span>
           <span class="task-title">{{ task.title }}</span>
           <span class="task-category">{{ task.category }}</span>
+          <a href="{{ url_for('pages.edit_task', task_id=task.id) }}" class="task-edit">Edit</a>
         </li>
         {% endfor %}
       </ul>

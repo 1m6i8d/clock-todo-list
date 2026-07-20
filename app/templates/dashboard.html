@@ -4,7 +4,6 @@
   <header class="page-header">
     <h1>Today</h1>
   </header>
-
   <div class="hero-grid">
     <div class="clock-panel">
       <div id="clock-wrap" class="clock-wrap">
@@ -13,7 +12,6 @@
       </div>
       <div id="clock-legend" class="clock-legend"></div>
     </div>
-
     <div class="task-section">
       <div class="section-header">
         <h2>Tasks</h2>
@@ -23,9 +21,13 @@
       <ul class="task-list">
         {% for task in tasks %}
         <li class="task-item {{ 'done' if task.done }}">
+          <form method="post" action="{{ url_for('pages.toggle_task', task_id=task.id) }}" class="inline-form">
+            <button type="submit" class="task-toggle" aria-label="Toggle done">{{ '✓' if task.done else '' }}</button>
+          </form>
           <span class="task-time">{{ "%02d:%02d"|format(task.start|int, ((task.start % 1) * 60)|int) }}</span>
           <span class="task-title">{{ task.title }}</span>
           <span class="task-category">{{ task.category }}</span>
+          <a href="{{ url_for('pages.edit_task', task_id=task.id) }}" class="task-edit">Edit</a>
         </li>
         {% endfor %}
       </ul>
@@ -39,10 +41,9 @@
     </div>
   </div>
 {% endblock %}
-
 {% block extra_scripts %}
 <script src="{{ url_for('static', filename='js/clock.js') }}"></script>
 <script>
-  renderClock({{ tasks|tojson }});
+  renderClock({{ tasks_json|tojson }});
 </script>
 {% endblock %}

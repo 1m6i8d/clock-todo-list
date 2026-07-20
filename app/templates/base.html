@@ -16,8 +16,15 @@
         <a href="{{ url_for('pages.dashboard') }}">Dashboard</a>
         <a href="{{ url_for('pages.tasks') }}">Tasks</a>
       </nav>
+      {% if current_user.is_authenticated %}
+      <div class="sidebar-user">
+        <span>{{ current_user.name }}</span>
+        <a href="{{ url_for('pages.logout') }}">Log out</a>
+      </div>
+      {% endif %}
     </aside>
     <main class="content">
+      {% include "_flashes.html" %}
       {% block content %}{% endblock %}
     </main>
   </div>
