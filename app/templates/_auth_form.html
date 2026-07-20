@@ -1,0 +1,16 @@
+{% macro auth_fields(mode) %}
+  {% if mode == 'signup' %}
+  <label>
+    Name
+    <input type="text" name="name" placeholder="Your name">
+  </label>
+  {% endif %}
+  <label>
+    Email
+    <input type="email" name="email" placeholder="you@example.com">
+  </label>
+  <label>
+    Password
+    <input type="password" name="password" placeholder="••••••••">
+  </label>
+{% endmacro %}

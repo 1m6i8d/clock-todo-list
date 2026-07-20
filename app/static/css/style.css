@@ -287,6 +287,12 @@ body {
   transition: border-color 0.15s ease;
 }
 
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 /* ---- Mobile: sidebar becomes a top bar ---- */
 @media (max-width: 640px) {
   .app-shell { flex-direction: column; min-height: auto; }

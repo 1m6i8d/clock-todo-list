@@ -22,16 +22,13 @@ let _wedgeRefs = [];   // [{ path, task }]
 let _legendRefs = [];  // [{ el, task }]
 let _tickStarted = false;
 
-const CATEGORY_COLORS = {
-  Health: "#2F5A45",
-  Work: "#5B7FB5",
-  Home: "#D98A3D",
-  Personal: "#7B6A9C",
-};
+// Color is resolved server-side now (see CATEGORY_COLORS in pages.py) —
+// every task arrives here with an explicit `color` already set, so
+// this is just a defensive fallback, not a second source of truth.
 const DEFAULT_COLOR = "#8A8778";
 
 function colorFor(task) {
-  return task.color || CATEGORY_COLORS[task.category] || DEFAULT_COLOR;
+  return task.color || DEFAULT_COLOR;
 }
 
 function hourToAngle(h) {

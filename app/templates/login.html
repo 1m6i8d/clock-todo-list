@@ -1,19 +1,13 @@
 {% extends "base.html" %}
+{% from "_auth_form.html" import auth_fields %}
 {% block title %}Log in - Clock{% endblock %}
 {% block layout %}
   <div class="auth-shell">
     <div class="auth-brand">Clock</div>
     <div class="auth-card">
       <h1>Log in</h1>
-      <form method="post" action="#" style="display:flex; flex-direction:column; gap:14px;">
-        <label>
-          Email
-          <input type="email" name="email" placeholder="you@example.com">
-        </label>
-        <label>
-          Password
-          <input type="password" name="password" placeholder="••••••••">
-        </label>
+      <form method="post" action="#" class="auth-form">
+        {{ auth_fields('login') }}
         <button type="submit" class="btn">Log in</button>
       </form>
     </div>
