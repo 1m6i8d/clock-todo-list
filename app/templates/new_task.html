@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}New Task - Clock{% endblock %}
+{% block content %}
+  <header class="page-header">
+    <h1>New Task</h1>
+  </header>
+
+  <form class="form-card" method="post" action="#">
+    <label>
+      Title
+      <input type="text" name="title" placeholder="e.g. Morning run">
+    </label>
+    <label>
+      Category
+      <select name="category">
+        <option>Health</option>
+        <option>Work</option>
+        <option>Home</option>
+        <option>Personal</option>
+      </select>
+    </label>
+    <label>
+      Start time
+      <input type="time" name="start">
+    </label>
+    <label>
+      End time
+      <input type="time" name="end">
+    </label>
+    <button type="submit" class="btn">Save task</button>
+  </form>
+  <p class="hint">This form isn't wired to the backend yet — it'll save to the database once the task model is connected.</p>
+{% endblock %}

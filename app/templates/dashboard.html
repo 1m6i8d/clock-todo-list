@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Clock{% endblock %}
+{% block content %}
+  <header class="page-header">
+    <h1>Today</h1>
+  </header>
+
+  <div class="hero-grid">
+    <div class="clock-panel">
+      <div id="clock-wrap" class="clock-wrap">
+        <svg id="clock-svg"></svg>
+        <div id="clock-tooltip" class="clock-tooltip"></div>
+      </div>
+      <div id="clock-legend" class="clock-legend"></div>
+    </div>
+
+    <div class="task-section">
+      <div class="section-header">
+        <h2>Tasks</h2>
+        <a href="{{ url_for('pages.new_task') }}" class="btn">+ New task</a>
+      </div>
+      {% if tasks %}
+      <ul class="task-list">
+        {% for task in tasks %}
+        <li class="task-item {{ 'done' if task.done }}">
+          <span class="task-time">{{ "%02d:%02d"|format(task.start|int, ((task.start % 1) * 60)|int) }}</span>
+          <span class="task-title">{{ task.title }}</span>
+          <span class="task-category">{{ task.category }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">🕐</div>
+        <p>No tasks yet — add your first one to see it on the clock.</p>
+        <a href="{{ url_for('pages.new_task') }}" class="btn">+ New task</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/clock.js') }}"></script>
+<script>
+  renderClock({{ tasks|tojson }});
+</script>
+{% endblock %}

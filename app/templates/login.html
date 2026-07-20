@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Log in - Clock{% endblock %}
+{% block layout %}
+  <div class="auth-shell">
+    <div class="auth-brand">Clock</div>
+    <div class="auth-card">
+      <h1>Log in</h1>
+      <form method="post" action="#" style="display:flex; flex-direction:column; gap:14px;">
+        <label>
+          Email
+          <input type="email" name="email" placeholder="you@example.com">
+        </label>
+        <label>
+          Password
+          <input type="password" name="password" placeholder="••••••••">
+        </label>
+        <button type="submit" class="btn">Log in</button>
+      </form>
+    </div>
+    <p class="auth-switch">New here? <a href="{{ url_for('pages.signup') }}">Create an account</a></p>
+    <p class="hint">Auth isn't wired up yet — this is a placeholder form.</p>
+  </div>
+{% endblock %}

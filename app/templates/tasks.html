@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Tasks - Clock{% endblock %}
+{% block content %}
+  <header class="page-header">
+    <h1>All tasks</h1>
+  </header>
+
+  <section class="task-section">
+    <div class="section-header">
+      <h2>{{ tasks|length }} tasks</h2>
+      <a href="{{ url_for('pages.new_task') }}" class="btn">+ New task</a>
+    </div>
+    {% if tasks %}
+      <ul class="task-list">
+        {% for task in tasks %}
+        <li class="task-item {{ 'done' if task.done }}">
+          <span class="task-time">{{ "%02d:%02d"|format(task.start|int, ((task.start % 1) * 60)|int) }}</span>
+          <span class="category-dot" style="background: {{ {'Health':'#2F5A45','Work':'#5B7FB5','Home':'#D98A3D','Personal':'#7B6A9C'}.get(task.category, '#8A8778') }}"></span>
+          <span class="task-title">{{ task.title }}</span>
+          <span class="task-category">{{ task.category }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">🕐</div>
+        <p>No tasks yet — add your first one to see it on the clock.</p>
+        <a href="{{ url_for('pages.new_task') }}" class="btn">+ New task</a>
+      </div>
+      {% endif %}
+  </section>
+{% endblock %}

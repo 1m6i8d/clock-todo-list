@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Clock{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  {% block layout %}
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">Clock</div>
+      <nav>
+        <a href="{{ url_for('pages.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('pages.tasks') }}">Tasks</a>
+      </nav>
+    </aside>
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% endblock %}
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
